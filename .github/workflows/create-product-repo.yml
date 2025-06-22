@@ -39,16 +39,44 @@ jobs:
       - name: Create new repository
         id: create-repo
         run: |
-          curl -X POST \
+          # Try to create repository in the organization first
+          response=$(curl -s -w "%{http_code}" -X POST \
             -H "Authorization: token ${{ inputs.github_token }}" \
             -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/user/repos \
+            https://api.github.com/orgs/${{ github.repository_owner }}/repos \
             -d '{
               "name": "${{ inputs.product_name }}",
               "description": "Portal for ${{ inputs.product_display_name }}",
               "private": ${{ inputs.repository_visibility == 'private' }},
               "auto_init": false
-            }'
+            }')
+          
+          http_code="${response: -3}"
+          response_body="${response%???}"
+          
+          if [ "$http_code" = "201" ]; then
+            echo "Repository created in organization"
+          else
+            echo "Failed to create in organization, trying user account..."
+            response=$(curl -s -w "%{http_code}" -X POST \
+              -H "Authorization: token ${{ inputs.github_token }}" \
+              -H "Accept: application/vnd.github.v3+json" \
+              https://api.github.com/user/repos \
+              -d '{
+                "name": "${{ inputs.product_name }}",
+                "description": "Portal for ${{ inputs.product_display_name }}",
+                "private": ${{ inputs.repository_visibility == 'private' }},
+                "auto_init": false
+              }')
+            
+            http_code="${response: -3}"
+            response_body="${response%???}"
+            
+            if [ "$http_code" != "201" ]; then
+              echo "Error creating repository: $response_body"
+              exit 1
+            fi
+          fi
           
           echo "repository_name=${{ inputs.product_name }}" >> $GITHUB_OUTPUT
 
