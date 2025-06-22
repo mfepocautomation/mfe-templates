@@ -1,0 +1,90 @@
+name: Create Product Repository
+
+on:
+  workflow_dispatch:
+    inputs:
+      product_name:
+        description: 'Nome do produto (ex: produto-a, produto-b)'
+        required: true
+        type: string
+      product_display_name:
+        description: 'Nome de exibição do produto (ex: Produto A, Produto B)'
+        required: true
+        type: string
+      repository_visibility:
+        description: 'Visibilidade do repositório'
+        required: false
+        type: choice
+        options:
+          - public
+          - private
+        default: 'private'
+      github_token:
+        description: 'GitHub Token com permissões para criar repositórios'
+        required: true
+        type: string
+
+jobs:
+  create-product-repository:
+    name: Create Product Repository
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Portal Template
+        uses: actions/checkout@v4
+        with:
+          token: ${{ inputs.github_token }}
+          path: portal-template
+
+      - name: Create new repository
+        id: create-repo
+        run: |
+          curl -X POST \
+            -H "Authorization: token ${{ inputs.github_token }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/user/repos \
+            -d '{
+              "name": "${{ inputs.product_name }}",
+              "description": "Portal para ${{ inputs.product_display_name }}",
+              "private": ${{ inputs.repository_visibility == 'private' }},
+              "auto_init": false
+            }'
+          
+          echo "repository_name=${{ inputs.product_name }}" >> $GITHUB_OUTPUT
+
+      - name: Clone new repository
+        run: |
+          git clone https://${{ inputs.github_token }}@github.com/${{ github.repository_owner }}/${{ steps.create-repo.outputs.repository_name }}.git product-repo
+
+      - name: Copy portal content
+        run: |
+          # Copiar todo o conteúdo da pasta portal para o novo repositório
+          cp -r portal-template/portal/* product-repo/
+          cd product-repo
+
+      - name: Update package.json
+        run: |
+          node -e "
+            const fs = require('fs');
+            const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            
+            packageJson.name = '${{ inputs.product_name }}';
+            packageJson.description = 'Portal para ${{ inputs.product_display_name }}';
+            packageJson.repository = 'https://github.com/${{ github.repository_owner }}/${{ inputs.product_name }}.git';
+            
+            fs.writeFileSync('package.json', JSON.stringify(packageJson, null, 2) + '\n');
+          "
+
+      - name: Commit and push
+        run: |
+          cd product-repo
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add .
+          git commit -m "feat: initial commit - portal template for ${{ inputs.product_display_name }}"
+          git push origin main
+
+      - name: Success notification
+        run: |
+          echo "✅ Repositório '${{ inputs.product_name }}' criado com sucesso!"
+          echo "🔗 URL: https://github.com/${{ github.repository_owner }}/${{ inputs.product_name }}" 
