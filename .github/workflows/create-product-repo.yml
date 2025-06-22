@@ -115,6 +115,7 @@ jobs:
       - name: Clone foundation repository
         run: |
           cd product-repo
+          rm -rf foundation
           git submodule add https://${{ inputs.github_token }}@github.com/mfepocautomation/mfe-foundation.git foundation
           git submodule update --init --recursive
 
