@@ -19,10 +19,6 @@ on:
           - public
           - private
         default: 'private'
-      github_token:
-        description: 'GitHub Token with permissions to create repositories'
-        required: true
-        type: string
 
 jobs:
   create-product-repository:
@@ -33,15 +29,21 @@ jobs:
       - name: Checkout Portal Template
         uses: actions/checkout@v4
         with:
-          token: ${{ inputs.github_token }}
           path: portal-template
+
+      - name: Debug repository owner
+        run: |
+          echo "Repository owner: ${{ github.repository_owner }}"
+          echo "Repository: ${{ github.repository }}"
 
       - name: Create new repository
         id: create-repo
         run: |
           # Try to create repository in the organization first
+          echo "Attempting to create repository in organization: ${{ github.repository_owner }}"
+          
           response=$(curl -s -w "%{http_code}" -X POST \
-            -H "Authorization: token ${{ inputs.github_token }}" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github+json" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/orgs/${{ github.repository_owner }}/repos \
@@ -55,12 +57,24 @@ jobs:
           http_code="${response: -3}"
           response_body="${response%???}"
           
+          echo "Organization API response code: $http_code"
+          echo "Organization API response body: $response_body"
+          
           if [ "$http_code" = "201" ]; then
             echo "Repository created in organization"
           else
             echo "Failed to create in organization, trying user account..."
+            
+            # Get the authenticated user
+            user_response=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Accept: application/vnd.github+json" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              https://api.github.com/user)
+            
+            echo "User info: $user_response"
+            
             response=$(curl -s -w "%{http_code}" -X POST \
-              -H "Authorization: token ${{ inputs.github_token }}" \
+              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
               -H "Accept: application/vnd.github+json" \
               -H "X-GitHub-Api-Version: 2022-11-28" \
               https://api.github.com/user/repos \
@@ -74,6 +88,9 @@ jobs:
             http_code="${response: -3}"
             response_body="${response%???}"
             
+            echo "User API response code: $http_code"
+            echo "User API response body: $response_body"
+            
             if [ "$http_code" != "201" ]; then
               echo "Error creating repository: $response_body"
               exit 1
@@ -84,7 +101,7 @@ jobs:
 
       - name: Clone new repository
         run: |
-          git clone https://${{ inputs.github_token }}@github.com/${{ github.repository_owner }}/${{ steps.create-repo.outputs.repository_name }}.git product-repo
+          git clone https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository_owner }}/${{ steps.create-repo.outputs.repository_name }}.git product-repo
 
       - name: Copy portal content
         run: |
