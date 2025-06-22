@@ -4,15 +4,15 @@ on:
   workflow_dispatch:
     inputs:
       product_name:
-        description: 'Nome do produto (ex: produto-a, produto-b)'
+        description: 'Product name (e.g., product-a, product-b)'
         required: true
         type: string
       product_display_name:
-        description: 'Nome de exibição do produto (ex: Produto A, Produto B)'
+        description: 'Product display name (e.g., Product A, Product B)'
         required: true
         type: string
       repository_visibility:
-        description: 'Visibilidade do repositório'
+        description: 'Repository visibility'
         required: false
         type: choice
         options:
@@ -20,7 +20,7 @@ on:
           - private
         default: 'private'
       github_token:
-        description: 'GitHub Token com permissões para criar repositórios'
+        description: 'GitHub Token with permissions to create repositories'
         required: true
         type: string
 
@@ -45,7 +45,7 @@ jobs:
             https://api.github.com/user/repos \
             -d '{
               "name": "${{ inputs.product_name }}",
-              "description": "Portal para ${{ inputs.product_display_name }}",
+              "description": "Portal for ${{ inputs.product_display_name }}",
               "private": ${{ inputs.repository_visibility == 'private' }},
               "auto_init": false
             }'
@@ -58,22 +58,8 @@ jobs:
 
       - name: Copy portal content
         run: |
-          # Copiar todo o conteúdo da pasta portal para o novo repositório
+          # Copy all content from portal folder to the root of the new repository
           cp -r portal-template/portal/* product-repo/
-          cd product-repo
-
-      - name: Update package.json
-        run: |
-          node -e "
-            const fs = require('fs');
-            const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-            
-            packageJson.name = '${{ inputs.product_name }}';
-            packageJson.description = 'Portal para ${{ inputs.product_display_name }}';
-            packageJson.repository = 'https://github.com/${{ github.repository_owner }}/${{ inputs.product_name }}.git';
-            
-            fs.writeFileSync('package.json', JSON.stringify(packageJson, null, 2) + '\n');
-          "
 
       - name: Commit and push
         run: |
@@ -86,5 +72,5 @@ jobs:
 
       - name: Success notification
         run: |
-          echo "✅ Repositório '${{ inputs.product_name }}' criado com sucesso!"
+          echo "✅ Repository '${{ inputs.product_name }}' created successfully!"
           echo "🔗 URL: https://github.com/${{ github.repository_owner }}/${{ inputs.product_name }}" 
