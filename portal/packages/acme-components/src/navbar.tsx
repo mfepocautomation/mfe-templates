@@ -2,11 +2,11 @@
 
 export function Navbar({ isDocsApp }: { isDocsApp?: boolean }) {
   const navigationItems = isDocsApp ? [
-    { href: '/', label: 'Home', isExternal: true },
-    { href: '/docs', label: 'Docs', isExternal: false }
+    { href: '/', label: 'Cadastrar Benefício', isExternal: true },
+    { href: '/docs', label: 'Cadastrar Fornecedor', isExternal: false }
   ] : [
-    { href: '/', label: 'Home', isExternal: false },
-    { href: '/docs', label: 'Docs', isExternal: true }
+    { href: '/', label: 'Cadastrar Benefício', isExternal: false },
+    { href: '/docs', label: 'Cadastrar Fornecedor', isExternal: true }
   ]
 
   return (
