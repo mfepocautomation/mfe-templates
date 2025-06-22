@@ -112,6 +112,11 @@ jobs:
           # Copy all content from portal folder to the root of the new repository
           cp -r portal/* product-repo/
 
+      - name: Clone foundation repository
+        run: |
+          cd product-repo
+          git clone https://github.com/mfepocautomation/foundation.git foundation
+
       - name: Commit and push
         run: |
           cd product-repo
