@@ -33,13 +33,13 @@ jobs:
       - name: Checkout Portal Template
         uses: actions/checkout@v4
         with:
-          token: ${{ inputs.github_token }}
-          path: portal-template
+          token: ${{ github.token }}
 
       - name: Debug repository owner
         run: |
           echo "Repository owner: ${{ github.repository_owner }}"
           echo "Repository: ${{ github.repository }}"
+
       - name: Create new repository
         id: create-repo
         run: |
@@ -102,13 +102,16 @@ jobs:
           fi
           
           echo "repository_name=${{ inputs.product_name }}" >> $GITHUB_OUTPUT
+
       - name: Clone new repository
         run: |
           git clone https://${{ inputs.github_token }}@github.com/${{ github.repository_owner }}/${{ steps.create-repo.outputs.repository_name }}.git product-repo
+
       - name: Copy portal content
         run: |
           # Copy all content from portal folder to the root of the new repository
-          cp -r portal-template/portal/* product-repo/
+          cp -r portal/* product-repo/
+
       - name: Commit and push
         run: |
           cd product-repo
@@ -117,6 +120,7 @@ jobs:
           git add .
           git commit -m "feat: initial commit - portal template for ${{ inputs.product_display_name }}"
           git push origin main
+
       - name: Success notification
         run: |
           echo "✅ Repository '${{ inputs.product_name }}' created successfully!"
