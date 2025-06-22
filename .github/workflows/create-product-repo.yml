@@ -33,8 +33,7 @@ jobs:
       - name: Checkout Portal Template
         uses: actions/checkout@v4
         with:
-          token: ${{ inputs.github_token }}
-          path: portal-template
+          token: ${{ github.token }}
 
       - name: Debug repository owner
         run: |
@@ -111,7 +110,7 @@ jobs:
       - name: Copy portal content
         run: |
           # Copy all content from portal folder to the root of the new repository
-          cp -r portal-template/portal/* product-repo/
+          cp -r portal/* product-repo/
 
       - name: Commit and push
         run: |
