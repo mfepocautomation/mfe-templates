@@ -34,7 +34,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ inputs.github_token }}
-          path: portal-template
+          path: portal
 
       - name: Create new repository
         id: create-repo
