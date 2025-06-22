@@ -1,4 +1,4 @@
-const { DOCS_URL } = process.env
+const DOCS_URL = process.env.DOCS_URL || 'http://localhost:3001'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -8,16 +8,12 @@ const nextConfig = {
        * Rewrites for Multi-Zones
        */
       {
-        source: '/docs',
-        destination: `${DOCS_URL}/docs`,
+        source: '/fornecedor',
+        destination: `${DOCS_URL}/fornecedor`,
       },
       {
-        source: '/docs/:path*',
-        destination: `${DOCS_URL}/docs/:path*`,
-      },
-      {
-        source: '/docs-static/:path*',
-        destination: `${DOCS_URL}/docs-static/:path*`,
+        source: '/fornecedor/:path*',
+        destination: `${DOCS_URL}/fornecedor/:path*`,
       },
     ]
   },

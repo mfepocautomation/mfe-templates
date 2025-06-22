@@ -1,6 +1,6 @@
 import { Navbar } from '@acme/components/navbar'
 
-export default function DocsPage() {
+export default function FornecedorPage() {
   return (
     <div className="flex">
       <Navbar isDocsApp />
@@ -14,4 +14,4 @@ export default function DocsPage() {
       </div>
     </div>
   )
-}
+} 

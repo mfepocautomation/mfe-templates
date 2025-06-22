@@ -3,10 +3,10 @@
 export function Navbar({ isDocsApp }: { isDocsApp?: boolean }) {
   const navigationItems = isDocsApp ? [
     { href: '/', label: 'Cadastrar Benefício', isExternal: true },
-    { href: '/docs', label: 'Cadastrar Fornecedor', isExternal: false }
+    { href: '/fornecedor', label: 'Cadastrar Fornecedor', isExternal: false }
   ] : [
     { href: '/', label: 'Cadastrar Benefício', isExternal: false },
-    { href: '/docs', label: 'Cadastrar Fornecedor', isExternal: true }
+    { href: '/fornecedor', label: 'Cadastrar Fornecedor', isExternal: true }
   ]
 
   return (
