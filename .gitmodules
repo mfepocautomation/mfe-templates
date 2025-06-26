@@ -1,0 +1,3 @@
+[submodule "portal/foundation"]
+	path = portal/foundation
+	url = git@github.com:mfepocautomation/mfe-foundation.git
